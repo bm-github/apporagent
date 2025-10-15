@@ -1,4 +1,4 @@
-# 🤖 App vs. Agent Quiz
+# 🤖 App or Agent Quiz
 
 A quick quiz to help build your intuition for the difference between an AI "App" and an "Agent" based on a product spec.
 
