@@ -6,6 +6,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App or Agent Quiz</title>
     <style>
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            z-index: 9999;
+            animation: confetti-fall linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .celebration-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            text-align: center;
+            animation: celebration-pop 0.5s ease-out forwards;
+        }
+
+        @keyframes celebration-pop {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .celebration-message h2 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .celebration-message p {
+            font-size: 1.2em;
+            color: #4a5568;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -570,6 +622,11 @@
             document.getElementById('total-count').textContent = quizData.length;
             const progress = (answered / quizData.length) * 100;
             document.getElementById('progress-fill').style.width = progress + '%';
+            
+            // Trigger celebration at perfect score
+            if (score === 24 && answered === 24) {
+                triggerCelebration();
+            }
         }
 
         function createQuizCard(item, index) {
@@ -735,6 +792,38 @@
             quizData.forEach((item, index) => {
                 container.appendChild(createQuizCard(item, index));
             });
+        }
+        function triggerCelebration() {
+            // Create celebration message
+            const message = document.createElement('div');
+            message.className = 'celebration-message';
+            message.innerHTML = `
+                <h2>🎉 Perfect Score! 🎉</h2>
+                <p>You've mastered App vs Agent thinking!</p>
+            `;
+            document.body.appendChild(message);
+
+            // Remove message after 3 seconds
+            setTimeout(() => {
+                message.style.animation = 'celebration-pop 0.3s ease-in reverse';
+                setTimeout(() => message.remove(), 300);
+            }, 3000);
+
+            // Create confetti
+            const colors = ['#667eea', '#764ba2', '#48bb78', '#ed8936', '#f56565', '#9f7aea'];
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    confetti.style.animationDelay = '0s';
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 30);
+            }
         }
 
         // Initialize
