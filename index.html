@@ -420,7 +420,7 @@
     </div>
 
     <script>
-        const quizData = [{
+        let quizData = [{
             spec: "Build a tool that extracts structured data from receipts",
             context: "Users upload photos of receipts. The tool should extract merchant name, date, total amount, and line items into a structured format.",
             answer: "app",
@@ -615,6 +615,15 @@
         }];
         let score = 0;
         let answered = 0;
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
 
         function updateStats() {
             document.getElementById('score').textContent = score;
@@ -827,6 +836,7 @@
         }
 
         // Initialize
+        quizData = shuffleArray(quizData);
         updateStats();
         renderQuiz();
     </script>
