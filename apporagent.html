@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App vs Agent Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.3);
+            height: 8px;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .quiz-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            border-left: 6px solid #cbd5e0;
+        }
+
+        .quiz-card.answered-correct {
+            border-left-color: #48bb78;
+        }
+
+        .quiz-card.answered-wrong {
+            border-left-color: #f56565;
+        }
+
+        .quiz-card.answered-tricky {
+            border-left-color: #9f7aea;
+        }
+
+        .quiz-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .spec-label {
+            font-size: 0.85em;
+            font-weight: 700;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .quiz-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .quiz-context {
+            color: #4a5568;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 1.05em;
+        }
+
+        .tricky-note {
+            color: #6b46c1;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #faf5ff;
+            border-radius: 8px;
+            border-left: 4px solid #9f7aea;
+        }
+
+        .choice-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .choice-btn {
+            flex: 1;
+            padding: 18px 24px;
+            border: 3px solid #e2e8f0;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .choice-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .choice-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .choice-btn.selected-correct {
+            background: #c6f6d5;
+            border-color: #48bb78;
+            color: #22543d;
+        }
+
+        .choice-btn.selected-wrong {
+            background: #fed7d7;
+            border-color: #f56565;
+            color: #742a2a;
+        }
+
+        .choice-btn.not-selected {
+            opacity: 0.4;
+        }
+
+        .reveal-btn {
+            width: 100%;
+            padding: 18px 24px;
+            border: 3px solid #9f7aea;
+            background: #faf5ff;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #6b46c1;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .reveal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(159, 122, 234, 0.3);
+            background: #f3e8ff;
+        }
+
+        .answer-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .answer-section.visible {
+            max-height: 800px;
+            margin-top: 20px;
+        }
+
+        .answer-content {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .result-badge.correct {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .result-badge.wrong {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .result-badge.tricky {
+            background: #e9d8fd;
+            color: #6b46c1;
+        }
+
+        .answer-label {
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .answer-text {
+            color: #4a5568;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .implementation-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #e2e8f0;
+        }
+
+        .implementation-box.app-impl {
+            border-left-color: #48bb78;
+        }
+
+        .implementation-box.agent-impl {
+            border-left-color: #ed8936;
+        }
+
+        /* FIX: When a card is tricky, make the agent implementation box green */
+        .quiz-card.answered-tricky .implementation-box.agent-impl {
+            border-left-color: #48bb78;
+        }
+
+        .impl-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+
+        .impl-text {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .key-indicator {
+            background: #fff5e6;
+            padding: 18px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #f6ad55;
+        }
+
+        .key-indicator-label {
+            font-weight: 700;
+            color: #c05621;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .key-indicator-text {
+            color: #744210;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .quiz-card {
+                padding: 20px;
+            }
+
+            .choice-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 App vs Agent Quiz</h1>
+            <div class="subtitle">Read the spec. Decide how to build it.</div>
+            <div class="stats">
+                <div class="stat-card">
+                    <span class="stat-number" id="score">0</span>
+                    <span class="stat-label">Correct</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="answered">0</span>
+                    <span class="stat-label">Answered</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="total-count">0</span>
+                    <span class="stat-label">Total</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </header>
+
+        <div id="quiz-container"></div>
+    </div>
+
+    <script>
+        const quizData = [{
+            spec: "Build a tool that extracts structured data from receipts",
+            context: "Users upload photos of receipts. The tool should extract merchant name, date, total amount, and line items into a structured format.",
+            answer: "app",
+            reasoning: "This is a straightforward transformation task: image → structured data. There's no decision-making, no goal-seeking, no uncertainty about what to do next. It performs OCR (likely using a dedicated OCR service like Textract or Tesseract, not an expensive vision model), parses the text, and outputs JSON.",
+            appApproach: "Use OCR service → parse text with regex/rules → validate format → return structured JSON",
+            agentApproach: "Not needed. The task doesn't require planning, iteration, or decisions about what to do.",
+            keyIndicator: "🔍 One-way transformation with a clear input and output. No 'what should I do next?' decisions."
+        }, {
+            spec: "Build a system to manage customer support tickets from start to resolution",
+            context: "When a ticket comes in, the system should gather necessary information, determine which team should handle it, escalate when needed, and track through to resolution.",
+            answer: "agent",
+            reasoning: "This requires multi-step decision-making: What information is missing? Should I ask the customer or check internal systems? Which team is best suited? Is this urgent? Has enough time passed to escalate? Is the issue actually resolved? The system needs to form a plan, adapt based on responses, and determine when its goal (resolved ticket) is achieved.",
+            appApproach: "Could build a simple ticket router that classifies and assigns based on keywords, but won't handle the full end-to-end flow described in the spec.",
+            agentApproach: "System maintains context across interactions → decides what info to gather → routes intelligently → monitors progress → escalates based on reasoning → verifies resolution",
+            keyIndicator: "🔍 Goal-seeking behaviour ('get this ticket resolved'), multi-step decisions, adapts based on context and responses."
+        }, {
+            spec: "Create a tool that generates email subject lines",
+            context: "Given email body content, generate 3-5 subject line options that are attention-grabbing and relevant.",
+            answer: "app",
+            reasoning: "This is a single-step transformation: email body → subject lines. The LLM generates options based on the content, but there's no reasoning about strategy, no decisions about whether the email should even be sent, no consideration of recipient preferences. It's a function call that returns output.",
+            appApproach: "Send email body to LLM with prompt → receive subject line options → return to user",
+            agentApproach: "Not needed unless the spec required reasoning like 'should this email be sent now or later?' or 'which recipient segment should get which subject line?'",
+            keyIndicator: "🔍 Stateless transformation. No memory of previous emails, no strategic decisions, just input → output."
+        }, {
+            spec: "Build a system that monitors production and handles incidents",
+            context: "Watch metrics and logs. When something looks wrong, diagnose the issue, attempt fixes, and escalate if needed. Track incidents through resolution.",
+            answer: "agent",
+            reasoning: "This requires hypothesis formation ('is this a DB issue or network issue?'), deciding what to investigate next, running diagnostic commands, interpreting results, trying different solutions, and determining when the issue is actually resolved. It's iterative problem-solving with uncertain outcomes.",
+            appApproach: "Could build alerts and runbooks, but that's just triggering predefined responses, not the adaptive diagnosis described in the spec.",
+            agentApproach: "Detect anomaly → form hypotheses → decide which logs/metrics to check → interpret findings → try solution → verify success → iterate if needed → escalate if stuck",
+            keyIndicator: "🔍 Diagnostic reasoning, iterative experimentation, 'done' criteria that the system determines itself."
+        }, {
+            spec: "Create a documentation search tool",
+            context: "Engineers should be able to ask questions and get relevant documentation snippets. Handle queries like 'how do I authenticate?' or 'what's the rate limit?'",
+            answer: "app",
+            reasoning: "This is semantic search with retrieval: question → find relevant docs → return snippets. While it uses an LLM for embeddings and possibly reranking, there's no ongoing decision-making. It doesn't ask clarifying questions, doesn't form a learning plan, doesn't decide the engineer needs something different than what they asked for.",
+            appApproach: "Query → generate embedding → search vector DB → retrieve and rank relevant chunks → return to user",
+            agentApproach: "Would involve reasoning like: 'They asked about auth, but based on their role and recent searches, they probably need the OAuth flow specifically, not API keys. Let me ask a clarifying question...'",
+            keyIndicator: "🔍 Match and retrieve. If it just finds and returns, it's an app. If it reasons about what the user really needs, it's an agent."
+        }, {
+            spec: "Build a code review assistant",
+            context: "When a PR is opened, review the code and provide feedback on potential issues, best practices, and suggestions for improvement.",
+            answer: "tricky",
+            reasoning: "This depends on the depth of review required. If it's checking linting rules, common bug patterns, and style guides → that's an App (pattern matching). If it's evaluating architectural decisions, understanding trade-offs, considering team context, and reasoning about 'is this the right approach for the problem?' → that's an Agent.",
+            appApproach: "Run linters → check against known bug patterns → flag style violations → surface results",
+            agentApproach: "Understand the PR's purpose → evaluate if the approach fits the problem → reason about trade-offs → consider broader codebase context → provide architectural feedback → ask questions if intent is unclear",
+            keyIndicator: "🔍 Pattern matching = App. Architectural reasoning and trade-off evaluation = Agent. The spec's phrase 'best practices and suggestions' could go either way!"
+        }, {
+            spec: "Build a weekly competitor intelligence report generator",
+            context: "Every week, produce a report on what our competitors are doing: new features, pricing changes, market moves, hiring, etc.",
+            answer: "agent",
+            reasoning: "This requires deciding what to investigate, which sources to check, evaluating credibility, determining what's worth including, synthesising findings, and knowing when enough information has been gathered. It's research with judgment calls at every step.",
+            appApproach: "Could scrape specific URLs on a schedule and dump changes, but that's just monitoring, not the intelligence analysis the spec describes.",
+            agentApproach: "Determine what to investigate this week → decide which sources to check → evaluate credibility → ask follow-up questions based on findings → synthesise into coherent narrative → determine what's actionable",
+            keyIndicator: "🔍 Information foraging with judgment ('what's important?'), synthesis, and knowing when to stop researching."
+        }, {
+            spec: "Create a meeting summarisation tool",
+            context: "Record meetings and generate concise summaries with key decisions, action items, and important discussion points.",
+            answer: "app",
+            reasoning: "This is transcription → summarisation. The LLM condenses the transcript and extracts structured information (decisions, action items). There's no planning involved, no decisions about what to do, no iteration. The output is deterministic given the input.",
+            appApproach: "Transcribe audio → send transcript to LLM with prompt → extract key points, decisions, action items → format and return",
+            agentApproach: "Not needed unless the spec required follow-up like 'determine if action items from last meeting were completed' or 'decide which attendees need which information'.",
+            keyIndicator: "🔍 One-pass transformation of audio → text → summary. No decisions about 'what should happen next?'"
+        }, {
+            spec: "Build an email inbox organiser",
+            context: "Automatically organise incoming emails into folders, mark priority emails, and surface what's important.",
+            answer: "tricky",
+            reasoning: "This could be either depending on implementation. If it's rule-based classification (sender, keywords → folder) → App. If it understands your priorities, learns from your behaviour, reasons about urgency based on context ('this looks routine but mentions tomorrow's deadline') → Agent.",
+            appApproach: "Classify emails by sender/subject/keywords → apply rules → file into folders → mark anything from VIP list as priority",
+            agentApproach: "Learn user's priorities over time → reason about context and urgency → understand 'this email seems unimportant but actually requires action' → adapt based on user feedback",
+            keyIndicator: "🔍 Rule-based sorting = App. Reasoning about priorities and context = Agent. The word 'important' in the spec is the tell — who decides what's important?"
+        }, {
+            spec: "Create a test data generator for our API",
+            context: "Given our API schema, generate realistic test data that satisfies all constraints and relationships between entities.",
+            answer: "app",
+            reasoning: "This is schema → valid data generation. While it might use an LLM to create realistic-looking names, addresses, etc., there's no decision-making or goal-seeking. It's a function: read schema, generate data that satisfies constraints, return.",
+            appApproach: "Parse schema → identify constraints → generate random data that satisfies them → validate → return",
+            agentApproach: "Not needed. The task has a clear algorithm: generate valid data. No uncertainty about what to do.",
+            keyIndicator: "🔍 Deterministic generation task with clear constraints. No 'figure out what to do' aspect."
+        }, {
+            spec: "Build a system that optimises our cloud infrastructure costs",
+            context: "Analyse our cloud spending and make changes to reduce costs while maintaining performance. Should handle rightsizing, reserved instances, spot instances, etc.",
+            answer: "agent",
+            reasoning: "This requires Analysing usage patterns, forming hypotheses about optimisation opportunities, evaluating trade-offs (cost vs. performance vs. reliability), making changes, monitoring impact, and iterating. It's multi-objective optimisation with reasoning at each step.",
+            appApproach: "Could generate a report with recommendations, but actually 'making changes' and 'optimising' requires the decision-making the spec describes.",
+            agentApproach: "Analyse spending → identify opportunities → evaluate trade-offs → propose changes → implement → monitor impact → adjust if needed → iterate",
+            keyIndicator: "🔍 Multi-objective optimisation with trade-offs, experimentation, and iteration. The word 'optimise' often signals agent behaviour."
+        }, {
+            spec: "Create a sentiment analysis tool for customer reviews",
+            context: "Analyse customer reviews and classify them as positive, negative, or neutral. Include confidence scores.",
+            answer: "app",
+            reasoning: "This is classification: review text → sentiment label. While you might use an LLM, there's no decision-making beyond the classification itself. It's a stateless transformation that outputs a label and confidence score.",
+            appApproach: "Send review to LLM or classification model → receive sentiment and confidence → return result",
+            agentApproach: "Not needed. Classification tasks are transformations, not goal-seeking behaviour.",
+            keyIndicator: "🔍 Fixed classification task. Input → output, no decisions about what to do with the result."
+        }, {
+            spec: "Build a password strength checker",
+            context: "Users enter a password and get feedback on its strength with specific recommendations for improvement (add numbers, special characters, etc.).",
+            answer: "app",
+            reasoning: "This is pure validation: password string → strength score + suggestions. It applies deterministic rules (length checks, character variety, common password database lookups). No decisions about what to do next, just evaluate and return feedback.",
+            appApproach: "Check password against rules → compare to breach databases → calculate strength score → generate specific improvement suggestions → return results",
+            agentApproach: "Not needed. The evaluation criteria are fixed and the output is purely based on the input string.",
+            keyIndicator: "🔍 Rule-based validation with deterministic output. No context or goals beyond the single evaluation."
+        }, {
+            spec: "Create a personal research assistant for investment decisions",
+            context: "Help users research potential investments by gathering data from multiple sources, Analysing trends, checking fundamentals, and providing a reasoned recommendation.",
+            answer: "agent",
+            reasoning: "This requires deciding what to research, which sources are credible, what metrics matter for this specific investment, reasoning about risk vs. reward, and synthesising findings into a recommendation. Each research path depends on what was learned previously.",
+            appApproach: "Could pull predetermined metrics from APIs and display them, but that's just data retrieval, not the research and reasoning the spec describes.",
+            agentApproach: "Determine research strategy → gather data from multiple sources → evaluate credibility → identify what's missing → dig deeper based on findings → reason about risks and opportunities → synthesise recommendation",
+            keyIndicator: "🔍 Multi-step research with adaptive strategy. The system decides what to investigate based on what it learns."
+        }, {
+            spec: "Build a log parsing and formatting tool",
+            context: "Take raw application logs in various formats and convert them to a standardised JSON structure with parsed timestamps, log levels, and messages.",
+            answer: "app",
+            reasoning: "This is format conversion: raw logs → structured JSON. It applies parsing rules, regex patterns, and format transformations. Even if it uses an LLM to handle unusual formats, there's no decision-making beyond the transformation itself.",
+            appApproach: "Detect log format → apply parsing rules → extract fields with regex → normalise timestamps → validate structure → output JSON",
+            agentApproach: "Not needed. This is a stateless transformation with clear input/output expectations.",
+            keyIndicator: "🔍 Format transformation task. No reasoning about what to do with the logs, just parse and structure."
+        }, {
+            spec: "Create a system that onboards new engineers",
+            context: "Guide new hires through setup, documentation, first tasks, and check-ins. Adapt the pace based on their progress and background. Ensure they're ready to contribute.",
+            answer: "agent",
+            reasoning: "This requires assessing the engineer's background, deciding what they need to learn first, monitoring their progress, adjusting the pace, determining when they're ready for more complex tasks, and knowing when onboarding is complete. It's goal-seeking behavior with constant adaptation.",
+            appApproach: "Could provide a static checklist of onboarding steps, but that's not the adaptive guidance the spec describes.",
+            agentApproach: "Assess background → create personalised plan → assign appropriate tasks → monitor progress → adjust difficulty → provide help when stuck → determine readiness → iterate until fully onboarded",
+            keyIndicator: "🔍 Goal-driven ('get this person productive') with continuous assessment and adaptation based on individual progress."
+        }, {
+            spec: "Build a duplicate detection system for user submissions",
+            context: "When users submit content (posts, tickets, reports), identify if it's substantially similar to existing submissions and flag potential duplicates.",
+            answer: "app",
+            reasoning: "This is similarity matching: new submission → find near-duplicates in existing data. It uses embeddings or fuzzy matching to compare content, but there's no reasoning about what to do with duplicates or decision-making beyond the matching itself.",
+            appApproach: "Generate embedding for new submission → search for similar embeddings → calculate similarity scores → return matches above threshold",
+            agentApproach: "Not needed unless the spec required decisions like 'should these be merged?' or 'which is the canonical version?'",
+            keyIndicator: "🔍 Similarity search and retrieval. If it just finds and flags matches, it's an app."
+        }, {
+            spec: "Create a content moderation system",
+            context: "Review user-generated content for policy violations. Should catch obvious issues automatically, but escalate ambiguous cases for human review with relevant context.",
+            answer: "tricky",
+            reasoning: "This depends on the level of judgment required. If it's checking against clear rules (banned words, explicit content detection) → App. If it's reasoning about context, understanding nuance, evaluating edge cases, and deciding what's truly policy-violating → Agent.",
+            appApproach: "Run content through classifiers → check banned word lists → detect explicit content → flag matches → escalate based on confidence thresholds",
+            agentApproach: "Understand content context → reason about intent → evaluate nuance and edge cases → determine severity → decide if escalation needed → provide reasoning for human reviewers",
+            keyIndicator: "🔍 Pattern matching and classification = App. Contextual reasoning and judgment calls = Agent. The word 'ambiguous' suggests some agent-like reasoning is expected."
+        }, {
+            spec: "Build a dynamic pricing calculator",
+            context: "Calculate product prices based on current demand, inventory levels, competitor prices, and customer segment. Adjust in real-time to optimise revenue.",
+            answer: "agent",
+            reasoning: "This requires continuously monitoring multiple signals, reasoning about trade-offs (higher price vs. conversion rate), experimenting with different price points, learning what works, and adapting strategy. It's optimisation with multi-factor decision-making.",
+            appApproach: "Could apply a fixed formula based on inputs, but 'optimise revenue' and real-time adaptation requires the strategic reasoning described.",
+            agentApproach: "Monitor demand signals → evaluate competitor pricing → assess inventory → reason about customer sensitivity → test price points → measure outcomes → adapt strategy → optimise for revenue",
+            keyIndicator: "🔍 Continuous optimisation with experimentation and learning. The word 'optimise' combined with multiple variables signals agent behavior."
+        }, {
+            spec: "Create a changelog generator from git commits",
+            context: "Scan git history and generate a human-readable changelog with features, fixes, and breaking changes categorised appropriately.",
+            answer: "app",
+            reasoning: "This is git history → formatted changelog. It parses commit messages (possibly using conventional commit patterns), categorises changes, and formats output. While an LLM might improve the descriptions, there's no decision-making or iteration—just transformation.",
+            appApproach: "Parse git commits → categorise by type (feat/fix/breaking) → group by category → format descriptions → generate markdown",
+            agentApproach: "Not needed. The task is extracting and reformatting existing information.",
+            keyIndicator: "🔍 Data extraction and formatting. Input (commits) → output (changelog), no strategic decisions."
+        }, {
+            spec: "Build a system that manages our technical debt",
+            context: "Track technical debt across the codebase, prioritise what to address based on impact and effort, and create remediation plans. Monitor progress and adjust priorities.",
+            answer: "agent",
+            reasoning: "This requires identifying debt, evaluating impact, reasoning about trade-offs (fix now vs. later), prioritising based on team capacity, creating actionable plans, monitoring whether fixes actually worked, and re-prioritising. It's ongoing judgment and adaptation.",
+            appApproach: "Could identify code issues with static analysis, but the prioritisation, planning, and adaptive management requires the reasoning described.",
+            agentApproach: "Identify debt → evaluate business impact → assess effort required → reason about priorities → create remediation plan → monitor progress → adjust based on outcomes → iterate",
+            keyIndicator: "🔍 Continuous prioritisation with trade-off evaluation and adaptive planning. Multiple feedback loops."
+        }, {
+            spec: "Create an API response caching layer",
+            context: "Cache API responses intelligently based on request patterns, invalidate when data changes, and optimise cache hit rates.",
+            answer: "tricky",
+            reasoning: "This could be either. If it's rule-based (cache for X minutes, invalidate on updates) → App. If it's learning patterns, reasoning about what should be cached, predicting cache utility, and adapting strategy → Agent.",
+            appApproach: "Cache responses with TTL → invalidate on write operations → return cached data on hits → standard cache eviction policies",
+            agentApproach: "Learn request patterns → predict cache value → reason about when to preload → adapt TTL based on data change frequency → optimise strategy based on hit rates",
+            keyIndicator: "🔍 Rule-based caching = App. Learning and adaptive optimisation = Agent. The word 'intelligently' and 'optimise' suggest more than basic caching."
+        }, {
+            spec: "Build a SQL query generator from natural language",
+            context: "Users describe what data they want in plain English, and the system generates the appropriate SQL query to retrieve it from our database.",
+            answer: "app",
+            reasoning: "This is natural language → SQL translation. While it uses an LLM, there's no iteration or decision-making beyond the translation. It converts intent to query syntax and returns it. The user executes it.",
+            appApproach: "Parse natural language intent → understand database schema → generate SQL query → validate syntax → return query",
+            agentApproach: "Would involve executing queries, checking results, refining if wrong, reasoning about performance, and iterating until the right data is retrieved.",
+            keyIndicator: "🔍 One-way translation task. If it just generates the query without executing and verifying results, it's an app."
+        }, {
+            spec: "Create a system that coordinates deployments across microservices",
+            context: "When deploying updates, determine deployment order based on dependencies, monitor health checks, rollback if issues detected, and ensure zero-downtime transitions.",
+            answer: "agent",
+            reasoning: "This requires planning deployment order, monitoring during execution, detecting problems, deciding whether to continue or rollback, potentially retrying, and determining when the deployment is truly successful. It's orchestration with continuous decision-making.",
+            appApproach: "Could follow a static deployment pipeline, but the adaptive monitoring, decision-making, and rollback logic described requires agent reasoning.",
+            agentApproach: "Analyse dependencies → plan deployment order → execute in stages → monitor health → detect issues → decide continue/rollback → retry if needed → verify success",
+            keyIndicator: "🔍 Orchestration with continuous monitoring and adaptive decision-making. Multiple 'what should I do?' decision points."
+        }];
+        let score = 0;
+        let answered = 0;
+
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('answered').textContent = answered;
+            document.getElementById('total-count').textContent = quizData.length;
+            const progress = (answered / quizData.length) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+        }
+
+        function createQuizCard(item, index) {
+            const card = document.createElement('div');
+            card.className = 'quiz-card';
+            card.dataset.index = index;
+            card.dataset.answer = item.answer;
+
+            const isTricky = item.answer === 'tricky';
+            const trickyNote = isTricky ? '<div class="tricky-note">⚠️ This one could go either way depending on implementation!</div>' : '';
+
+            // Reverting to conditional buttons: Reveal for tricky, choices for others
+            const buttonsHTML = isTricky ? `
+                <button class="reveal-btn" onclick="revealTrickyAnswer(${index})">
+                    🔍 Reveal Answer
+                </button>
+            ` : `
+                <div class="choice-buttons">
+                    <button class="choice-btn" onclick="selectAnswer(${index}, 'app')">
+                        <span>🔧</span> <span>App</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectAnswer(${index}, 'agent')">
+                        <span>🤖</span> <span>Agent</span>
+                    </button>
+                </div>
+            `;
+
+            card.innerHTML = `
+                <div class="spec-label">📋 Product Spec</div>
+                <div class="quiz-title">${item.spec}</div>
+                <div class="quiz-context">${item.context}</div>
+                ${trickyNote}
+                ${buttonsHTML}
+                <div class="answer-section">
+                    <div class="answer-content">
+                        <div class="result-message"></div>
+                        <div class="answer-label">Why:</div>
+                        <div class="answer-text">${item.reasoning}</div>
+                        
+                        <div class="implementation-box app-impl">
+                            <div class="impl-title">🔧 App Approach:</div>
+                            <div class="impl-text">${item.appApproach}</div>
+                        </div>
+                        
+                        <div class="implementation-box agent-impl">
+                            <div class="impl-title">🤖 Agent Approach:</div>
+                            <div class="impl-text">${item.agentApproach}</div>
+                        </div>
+
+                        <div class="key-indicator">
+                            <div class="key-indicator-label">🎯 Key Indicator:</div>
+                            <div class="key-indicator-text">${item.keyIndicator}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Reinstated function for tricky questions
+        function revealTrickyAnswer(index) {
+            const card = document.querySelector(`[data-index="${index}"]`);
+            const answerSection = card.querySelector('.answer-section');
+            const resultMessage = card.querySelector('.result-message');
+            const revealBtn = card.querySelector('.reveal-btn');
+
+            // Prevent multiple reveals
+            if (card.classList.contains('answered-tricky')) {
+                return;
+            }
+
+            // Update stats (tricky questions always count as correct)
+            answered++;
+            score++;
+            card.classList.add('answered-tricky'); // This class triggers the CSS fix
+
+            // Disable reveal button
+            revealBtn.disabled = true;
+            revealBtn.style.opacity = '0.5';
+            revealBtn.style.cursor = 'not-allowed';
+
+            // Show result message
+            resultMessage.innerHTML = '<div class="result-badge tricky">✨ Both approaches can work!</div>';
+
+            // Show answer
+            answerSection.classList.add('visible');
+
+            // Update stats
+            updateStats();
+
+            // Scroll to show answer
+            setTimeout(() => {
+                answerSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
+                });
+            }, 100);
+        }
+
+        // Adapted function for standard questions (only triggered if 'tricky' is not the answer)
+        function selectAnswer(index, choice) {
+            const card = document.querySelector(`[data-index="${index}"]`);
+            const correctAnswer = card.dataset.answer;
+            const buttons = card.querySelectorAll('.choice-btn');
+            const answerSection = card.querySelector('.answer-section');
+            const resultMessage = card.querySelector('.result-message');
+
+            // Prevent multiple answers
+            if (card.classList.contains('answered-correct') || card.classList.contains('answered-wrong')) {
+                return;
+            }
+
+            const isCorrect = choice === correctAnswer;
+
+            // Update score
+            answered++;
+            if (isCorrect) {
+                score++;
+                card.classList.add('answered-correct');
+            } else {
+                card.classList.add('answered-wrong');
+            }
+
+            // Update buttons
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                const btnType = btn.textContent.includes('App') ? 'app' : 'agent';
+
+                if (btnType === choice) {
+                    btn.classList.add(isCorrect ? 'selected-correct' : 'selected-wrong');
+                } else {
+                    btn.classList.add('not-selected');
+                }
+            });
+
+            // Show result message
+            if (isCorrect) {
+                resultMessage.innerHTML = '<div class="result-badge correct">✓ Correct!</div>';
+            } else {
+                resultMessage.innerHTML = `<div class="result-badge wrong">✗ Not quite — this is an ${correctAnswer}</div>`;
+            }
+
+            // Show answer
+            answerSection.classList.add('visible');
+
+            // Update stats
+            updateStats();
+
+            // Scroll to show answer
+            setTimeout(() => {
+                answerSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
+                });
+            }, 100);
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            quizData.forEach((item, index) => {
+                container.appendChild(createQuizCard(item, index));
+            });
+        }
+
+        // Initialize
+        updateStats();
+        renderQuiz();
+    </script>
+</body>
+
+</html>
