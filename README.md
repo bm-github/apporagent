@@ -20,5 +20,5 @@ Try the quiz with your own knowledge first. If you need a refresher on the conce
 
 This is a single HTML file. No setup needed.
 
-1.  Download `index.html`.
+1.  Download HTML file or using the [online quiz](https://bm-github.github.io/apporagent/)
 2.  Open it in your web browser.
