@@ -340,7 +340,6 @@
             border-left-color: #ed8936;
         }
 
-        /* FIX: When a card is tricky, make the agent implementation box green */
         .quiz-card.answered-tricky .implementation-box.agent-impl {
             border-left-color: #48bb78;
         }
@@ -389,6 +388,31 @@
                 flex-direction: column;
             }
         }
+                footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-bottom: 30px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+        }
+
+        footer p {
+            line-height: 1.6;
+        }
+
+        footer a {
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 2px 1px;
+        }
+
+        footer a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-bottom-color: white;
+        }
     </style>
 </head>
 
@@ -418,7 +442,13 @@
 
         <div id="quiz-container"></div>
     </div>
-
+    <footer>
+        <p>
+            A project by <a href="https://github.com/bm-github" target="_blank" rel="noopener noreferrer">bm-github</a>.
+            <br>
+            View the source code on <a href="https://github.com/bm-github/apporagent" target="_blank" rel="noopener noreferrer">GitHub</a>.
+        </p>
+    </footer>
     <script>
         let quizData = [{
             spec: "Build a tool that extracts structured data from receipts",
