@@ -498,7 +498,7 @@
                 transition: all 0.3s ease;
                 box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
             ">
-                🎯 Load More Questions
+                🎯 Continue with full quiz
             </button>
         </div>
     </div>
@@ -715,18 +715,11 @@
             return shuffled;
         }
 
-        function updateStats() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('answered').textContent = answered;
-            document.getElementById('total-count').textContent = quizData.length;
-            const progress = (answered / quizData.length) * 100;
-            document.getElementById('progress-fill').style.width = progress + '%';
-            
-            checkIfShouldShowLoadMore(); // Add this line
-            
-            // Trigger celebration at perfect score for current batch
-            if (score === answered && answered === quizData.length && answered > 0) {
-                triggerCelebration();
+        function checkIfShouldShowLoadMore() {
+            // Only show load more if they started with Quick Practice (10 questions)
+            // and have completed all current questions
+            if (initialChoice === 10 && answered === quizData.length && quizData.length < fullQuizData.length) {
+                document.getElementById('load-more-container').style.display = 'block';
             }
         }
 
@@ -803,7 +796,7 @@
             // Update stats (tricky questions always count as correct)
             answered++;
             score++;
-            card.classList.add('answered-tricky'); // This class triggers the CSS fix
+            card.classList.add('answered-tricky');
 
             // Disable reveal button
             revealBtn.disabled = true;
@@ -885,6 +878,24 @@
                 });
             }, 100);
         }
+        
+        function updateStats() {
+            const totalCount = quizData.length;
+            document.getElementById('score').textContent = score;
+            document.getElementById('answered').textContent = answered;
+            document.getElementById('total-count').textContent = totalCount;
+
+            const progress = totalCount > 0 ? (answered / totalCount) * 100 : 0;
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+
+            // Check if all questions have been answered to potentially show celebration or load more
+            if (answered > 0 && answered === totalCount) {
+                if (score === totalCount) {
+                    triggerCelebration();
+                }
+                checkIfShouldShowLoadMore();
+            }
+        }
 
         function renderQuiz() {
             const container = document.getElementById('quiz-container');
@@ -951,7 +962,7 @@
             const currentBatchAnswered = answered;
             const currentBatchTotal = quizData.length;
             
-            // Show load more button if all current questions answered and more available
+            // Show continue quiz button if all current questions answered and more available
             if (currentBatchAnswered === currentBatchTotal && quizData.length < fullQuizData.length) {
                 document.getElementById('load-more-container').style.display = 'block';
             }
@@ -965,14 +976,17 @@
             
             // Set up quiz with selected count
             displayCount = questionCount;
+            initialChoice = questionCount; // Track what they originally chose
             quizData = fullQuizData.slice(0, displayCount);
             updateStats();
             renderQuiz();
         }
 
-        // Initialize
+        // Initialize - don't set up quiz until mode is selected
         let displayCount = 10;
-        const fullQuizData = shuffleArray(quizData);;
+        let initialChoice = 10;
+        let fullQuizData = shuffleArray([...quizData]); // Shuffle a copy of the original data
+        quizData = []; // Clear until mode selected
     </script>
 </body>
 
