@@ -333,15 +333,20 @@
         }
 
         .implementation-box.app-impl {
-            border-left-color: #48bb78;
+        border-left-color: #e2e8f0;
         }
 
         .implementation-box.agent-impl {
-            border-left-color: #ed8936;
+            border-left-color: #e2e8f0;
         }
 
-        /* FIX: When a card is tricky, make the agent implementation box green */
+        .quiz-card[data-answer="app"] .implementation-box.app-impl,
+        .quiz-card.answered-tricky .implementation-box.app-impl,
         .quiz-card.answered-tricky .implementation-box.agent-impl {
+            border-left-color: #48bb78; 
+        }
+
+        .quiz-card[data-answer="agent"] .implementation-box.agent-impl {
             border-left-color: #48bb78;
         }
 
@@ -389,12 +394,75 @@
                 flex-direction: column;
             }
         }
+                footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-bottom: 30px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+        }
+
+        footer p {
+            line-height: 1.6;
+        }
+
+        footer a {
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 2px 1px;
+        }
+
+        footer a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-bottom-color: white;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <header>
+        <div id="mode-selection" style="text-align: center; padding: 60px 20px;">
+        <h1 style="color: white; font-size: 3em; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);">🤖 App or Agent Quiz</h1>
+        <p style="color: white; font-size: 1.3em; margin-bottom: 40px; opacity: 0.95;">Read the spec. Decide how to build it.</p>
+        
+        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; max-width: 600px; margin: 0 auto;">
+            <button onclick="startQuiz(10)" style="
+                flex: 1;
+                min-width: 250px;
+                padding: 30px;
+                background: white;
+                border: none;
+                border-radius: 16px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            ">
+                <div style="font-size: 2em; margin-bottom: 10px;">☕</div>
+                <div style="font-size: 1.3em; font-weight: 700; color: #667eea; margin-bottom: 8px;">Quick Practice</div>
+                <div style="color: #4a5568; font-size: 0.95em;">10 questions • ~5 minutes</div>
+            </button>
+            
+            <button onclick="startQuiz(24)" style="
+                flex: 1;
+                min-width: 250px;
+                padding: 30px;
+                background: white;
+                border: none;
+                border-radius: 16px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            ">
+                <div style="font-size: 2em; margin-bottom: 10px;">🎯</div>
+                <div style="font-size: 1.3em; font-weight: 700; color: #667eea; margin-bottom: 8px;">Full Challenge</div>
+                <div style="color: #4a5568; font-size: 0.95em;">24 questions • ~15 minutes</div>
+            </button>
+        </div>
+    </div>
+        <header style="display: none;">
             <h1>🤖 App or Agent Quiz</h1>
             <div class="subtitle">Read the spec. Decide how to build it.</div>
             <div class="stats">
@@ -417,8 +485,30 @@
         </header>
 
         <div id="quiz-container"></div>
+        <div id="load-more-container" style="text-align: center; margin: 40px 0; display: none;">
+            <button id="load-more-btn" onclick="loadMoreQuestions()" style="
+                padding: 20px 40px;
+                background: white;
+                border: 3px solid #667eea;
+                border-radius: 12px;
+                font-size: 1.2em;
+                font-weight: 600;
+                color: #667eea;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+            ">
+                🎯 Load More Questions
+            </button>
+        </div>
     </div>
-
+    <footer>
+        <p>
+            A project by <a href="https://github.com/bm-github" target="_blank" rel="noopener noreferrer">bm-github</a>.
+            <br>
+            View the source code on <a href="https://github.com/bm-github/apporagent" target="_blank" rel="noopener noreferrer">GitHub</a>.
+        </p>
+    </footer>
     <script>
         let quizData = [{
             spec: "Build a tool that extracts structured data from receipts",
@@ -597,7 +687,7 @@
             agentApproach: "Learn request patterns → predict cache value → reason about when to preload → adapt TTL based on data change frequency → optimise strategy based on hit rates",
             keyIndicator: "🔍 Rule-based caching = App. Learning and adaptive optimisation = Agent. The word 'intelligently' and 'optimise' suggest more than basic caching."
         }, {
-            spec: "Build a SQL query generator from natural language",
+            spec: "Build an SQL query generator from natural language",
             context: "Users describe what data they want in plain English, and the system generates the appropriate SQL query to retrieve it from our database.",
             answer: "app",
             reasoning: "This is natural language → SQL translation. While it uses an LLM, there's no iteration or decision-making beyond the translation. It converts intent to query syntax and returns it. The user executes it.",
@@ -632,8 +722,10 @@
             const progress = (answered / quizData.length) * 100;
             document.getElementById('progress-fill').style.width = progress + '%';
             
-            // Trigger celebration at perfect score
-            if (score === 24 && answered === 24) {
+            checkIfShouldShowLoadMore(); // Add this line
+            
+            // Trigger celebration at perfect score for current batch
+            if (score === answered && answered === quizData.length && answered > 0) {
                 triggerCelebration();
             }
         }
@@ -808,7 +900,7 @@
             message.className = 'celebration-message';
             message.innerHTML = `
                 <h2>🎉 Perfect Score! 🎉</h2>
-                <p>You've mastered App vs Agent thinking!</p>
+                <p>You've mastered App or Agent thinking!</p>
             `;
             document.body.appendChild(message);
 
@@ -834,11 +926,53 @@
                 }, i * 30);
             }
         }
+        function loadMoreQuestions() {
+            const previousCount = quizData.length;
+            const newCount = Math.min(previousCount + 10, fullQuizData.length);
+            
+            quizData = fullQuizData.slice(0, newCount);
+            
+            // Render only the new questions
+            const container = document.getElementById('quiz-container');
+            for (let i = previousCount; i < newCount; i++) {
+                container.appendChild(createQuizCard(quizData[i], i));
+            }
+            
+            updateStats();
+            
+            // Hide button if all questions loaded
+            if (newCount >= fullQuizData.length) {
+                document.getElementById('load-more-container').style.display = 'none';
+            }
+        }
+
+        function checkIfShouldShowLoadMore() {
+            // Count answered questions in current batch
+            const currentBatchAnswered = answered;
+            const currentBatchTotal = quizData.length;
+            
+            // Show load more button if all current questions answered and more available
+            if (currentBatchAnswered === currentBatchTotal && quizData.length < fullQuizData.length) {
+                document.getElementById('load-more-container').style.display = 'block';
+            }
+        }
+        function startQuiz(questionCount) {
+            // Hide mode selection
+            document.getElementById('mode-selection').style.display = 'none';
+            
+            // Show header
+            document.querySelector('header').style.display = 'block';
+            
+            // Set up quiz with selected count
+            displayCount = questionCount;
+            quizData = fullQuizData.slice(0, displayCount);
+            updateStats();
+            renderQuiz();
+        }
 
         // Initialize
-        quizData = shuffleArray(quizData);
-        updateStats();
-        renderQuiz();
+        let displayCount = 10;
+        const fullQuizData = shuffleArray(quizData);;
     </script>
 </body>
 
