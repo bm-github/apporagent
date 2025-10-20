@@ -694,7 +694,62 @@
             appApproach: "Parse natural language intent → understand database schema → generate SQL query → validate syntax → return query",
             agentApproach: "Would involve executing queries, checking results, refining if wrong, reasoning about performance, and iterating until the right data is retrieved.",
             keyIndicator: "🔍 One-way translation task. If it just generates the query without executing and verifying results, it's an app."
-        }, {
+        },
+        {
+            spec: "Build a tool to process employee expense reports",
+            context: "Employees submit receipts and other details for reimbursement. The tool should extract key data, check it against company policy for violations (e.g., spending limits), and flag any non-compliant items.",
+            answer: "app",
+            reasoning: "This is a data extraction and validation pipeline. It follows a fixed set of rules (the company policy) to check each expense. There is no long-term goal or complex decision-making; it's a series of deterministic checks: extract -> compare to rule -> pass/fail.",
+            appApproach: "Use OCR to read receipts → parse amounts and dates → compare against predefined policy rules (e.g., 'meal limit < $50') → validate against project codes → flag non-compliant entries for review.",
+            agentApproach: "Not needed unless the spec required it to *negotiate* with an employee about an out-of-policy expense or *decide* if an exception is warranted based on context (e.g., 'this was an important client dinner').",
+            keyIndicator: "🔍 Rule-based validation. The logic ('is this expense valid?') is a series of deterministic checks, not strategic reasoning."
+        },
+        {
+            spec: "Create a system to actively manage a user's investment portfolio",
+            context: "Based on a user's stated risk tolerance and financial goals (e.g., 'retire in 20 years'), the system should select investments, execute trades, rebalance the portfolio over time, and adjust its strategy based on market conditions and news.",
+            answer: "agent",
+            reasoning: "This is a classic long-running, goal-seeking task. It requires continuous monitoring, reasoning about trade-offs (risk vs. reward), forming a plan (buy/sell/hold), and adapting that plan based on new, unpredictable information. The goal is to 'optimize' the portfolio, not just perform a single calculation.",
+            appApproach: "Could build a simple calculator that suggests a static asset allocation based on a quiz, but it would not 'actively manage' or 'adjust strategy' as the spec requires.",
+            agentApproach: "Define user goal → create initial investment plan → continuously monitor market data & news → reason about potential impacts → decide whether to rebalance, buy, or sell → execute trades → report on progress → repeat.",
+            keyIndicator: "🔍 Continuous, goal-driven optimization with adaptive planning. The system decides *what to do* and *when to do it* to achieve a long-term objective."
+        },
+        {
+            spec: "Build a system to detect and handle potentially fraudulent financial transactions",
+            context: "Monitor real-time transactions for a bank. When a suspicious transaction is identified, the system should investigate further and decide whether to block the transaction and alert the user.",
+            answer: "tricky",
+            reasoning: "This hinges on the depth of 'investigate' and 'decide'. A simple system (App) would just use a machine learning model to flag transactions that match known fraud patterns. A more advanced system (Agent) would actively gather more context to make a better, reasoned decision, much like a human fraud analyst.",
+            appApproach: "A classification model scores each transaction based on features (amount, location, time, merchant type). If the score exceeds a fixed threshold, the transaction is automatically blocked. This is pattern matching.",
+            agentApproach: "Detect an anomaly → form a hypothesis ('is this person unexpectedly traveling?') → decide what extra data to check (e.g., user's past travel history, recent login locations) → reason about the combined evidence → make a final decision to block or allow.",
+            keyIndicator: "🔍 Pattern matching vs. investigative reasoning. Simply 'detecting' is often an app; 'investigating' to make a high-stakes decision is often an agent. The spec includes both."
+        },
+        {
+            spec: "Build a sanctions screening tool for customer onboarding",
+            context: "When a new customer signs up, the tool must check their name and details against global sanctions lists (e.g., OFAC). The system should handle slight variations in names and flag potential matches for review.",
+            answer: "app",
+            reasoning: "This is a classic data matching and retrieval task. It takes an input (a name), compares it against a fixed dataset (the sanctions lists) using fuzzy logic, and outputs a result (match/no match/potential match). There is no planning, no goal-seeking, and no multi-step reasoning.",
+            appApproach: "Normalize the input name → use a fuzzy matching algorithm (like Levenshtein distance) to compare against a database of sanctioned individuals → return any matches that exceed a predefined similarity threshold.",
+            agentApproach: "Not needed unless the spec required the system to *independently investigate* an ambiguous match by searching for news articles or corporate records to determine if it's the same person, which is beyond simple screening.",
+            keyIndicator: "🔍 Data matching and retrieval against a fixed dataset. If the primary action is 'check this against a list,' it's an app."
+        },
+        {
+            spec: "Build a system to investigate and triage Anti-Money Laundering (AML) alerts",
+            context: "Our transaction monitoring system generates thousands of alerts for suspicious activity. This system needs to investigate each alert to determine if it represents a genuine risk that requires a full-blown Suspicious Activity Report (SAR).",
+            answer: "agent",
+            reasoning: "An alert is just a starting point. 'Investigating' requires a multi-step, goal-oriented process: forming a hypothesis, deciding what evidence to gather next (e.g., transaction history, related accounts, customer's profile), synthesizing the findings, and making a reasoned judgment. This is not a single transformation; it's an iterative inquiry.",
+            appApproach: "Could build a simple dashboard that pulls pre-defined data points when an alert is clicked, but it wouldn't decide what to look for or make a recommendation. The human would still be the one investigating.",
+            agentApproach: "Receive alert → plan investigation steps → pull customer's full transaction history → analyze for patterns (e.g., structuring, pass-through activity) → check for links to other high-risk accounts → synthesize a narrative → recommend 'close case' or 'escalate for SAR filing'.",
+            keyIndicator: "🔍 Investigative reasoning and evidence gathering. The system has to decide *what to look for next* to achieve its goal of triaging the alert."
+        },
+        {
+            spec: "Create a credit risk assessment tool for loan applications",
+            context: "Evaluate a loan applicant's data to determine their creditworthiness and the likelihood they will default on the loan. The output should be a risk score and a recommendation to approve or deny the application.",
+            answer: "tricky",
+            reasoning: "This is a classic 'it depends on the complexity' problem. For a simple consumer loan, this is an App that just runs a quantitative model. For a complex commercial loan, a system that acts more like a human underwriter, reasoning about qualitative factors, would be an Agent.",
+            appApproach: "Take quantitative inputs (credit score, income, debt-to-income ratio) → feed them into a pre-trained statistical model or a fixed scorecard → output a risk score and a deterministic approve/deny decision based on a threshold.",
+            agentApproach: "For a business loan, the system would analyze the company's business plan, market trends, and management team experience. It might reason that 'although their current cash flow is tight, their new contract makes them a good risk' or identify missing information and decide to ask for more documents.",
+            keyIndicator: "🔍 Scorecard calculation vs. holistic judgment. 'Assessing risk' can be a simple, quantitative calculation (App) or a complex, context-aware evaluation that weighs qualitative evidence (Agent)."
+        },
+        {
             spec: "Create a system that coordinates deployments across microservices",
             context: "When deploying updates, determine deployment order based on dependencies, monitor health checks, rollback if issues detected, and ensure zero-downtime transitions.",
             answer: "agent",
