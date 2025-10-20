@@ -222,10 +222,11 @@
             gap: 10px;
         }
 
-        .choice-btn:hover:not(:disabled) {
+        .choice-btn:hover:not(:disabled), .choice-btn:focus {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
             border-color: #667eea;
+            outline: none;
         }
 
         .choice-btn:disabled {
@@ -263,10 +264,11 @@
             margin-bottom: 20px;
         }
 
-        .reveal-btn:hover {
+        .reveal-btn:hover, .reveal-btn:focus {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(159, 122, 234, 0.3);
             background: #f3e8ff;
+            outline: none;
         }
 
         .answer-section {
@@ -276,7 +278,7 @@
         }
 
         .answer-section.visible {
-            max-height: 2000px;
+            max-height: 800px;
             margin-top: 20px;
         }
 
@@ -380,6 +382,12 @@
             color: #744210;
             line-height: 1.6;
         }
+        
+        #load-more-btn:focus {
+            outline: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            border-color: #434190;
+        }
 
         @media (max-width: 768px) {
             h1 {
@@ -445,7 +453,7 @@
                 <div style="color: #4a5568; font-size: 0.95em;">10 questions • ~5 minutes</div>
             </button>
             
-            <button onclick="startQuiz(24)" style="
+            <button id="full-challenge-btn" style="
                 flex: 1;
                 min-width: 250px;
                 padding: 30px;
@@ -458,7 +466,7 @@
             ">
                 <div style="font-size: 2em; margin-bottom: 10px;">🎯</div>
                 <div style="font-size: 1.3em; font-weight: 700; color: #667eea; margin-bottom: 8px;">Full Challenge</div>
-                <div style="color: #4a5568; font-size: 0.95em;">24 questions • ~15 minutes</div>
+                <div id="full-challenge-details" style="color: #4a5568; font-size: 0.95em;">Loading...</div>
             </button>
         </div>
     </div>
@@ -562,10 +570,10 @@
             spec: "Build a weekly competitor intelligence report generator",
             context: "Every week, produce a report on what our competitors are doing: new features, pricing changes, market moves, hiring, etc.",
             answer: "agent",
-            reasoning: "This requires deciding what to investigate, which sources to check, evaluating credibility, determining what's worth including, synthesising findings, and knowing when enough information has been gathered. It's research with judgment calls at every step.",
+            reasoning: "This requires deciding what to investigate, which sources to check, evaluating credibility, determining what's worth including, synthesising findings, and knowing when enough information has been gathered. It's research with judgement calls at every step.",
             appApproach: "Could scrape specific URLs on a schedule and dump changes, but that's just monitoring, not the intelligence analysis the spec describes.",
             agentApproach: "Determine what to investigate this week → decide which sources to check → evaluate credibility → ask follow-up questions based on findings → synthesise into coherent narrative → determine what's actionable",
-            keyIndicator: "🔍 Information foraging with judgment ('what's important?'), synthesis, and knowing when to stop researching."
+            keyIndicator: "🔍 Information foraging with judgement ('what's important?'), synthesis, and knowing when to stop researching."
         }, {
             spec: "Create a meeting summarisation tool",
             context: "Record meetings and generate concise summaries with key decisions, action items, and important discussion points.",
@@ -594,7 +602,7 @@
             spec: "Build a system that optimises our cloud infrastructure costs",
             context: "Analyse our cloud spending and make changes to reduce costs while maintaining performance. Should handle rightsizing, reserved instances, spot instances, etc.",
             answer: "agent",
-            reasoning: "This requires Analysing usage patterns, forming hypotheses about optimisation opportunities, evaluating trade-offs (cost vs. performance vs. reliability), making changes, monitoring impact, and iterating. It's multi-objective optimisation with reasoning at each step.",
+            reasoning: "This requires analysing usage patterns, forming hypotheses about optimisation opportunities, evaluating trade-offs (cost vs. performance vs. reliability), making changes, monitoring impact, and iterating. It's multi-objective optimisation with reasoning at each step.",
             appApproach: "Could generate a report with recommendations, but actually 'making changes' and 'optimising' requires the decision-making the spec describes.",
             agentApproach: "Analyse spending → identify opportunities → evaluate trade-offs → propose changes → implement → monitor impact → adjust if needed → iterate",
             keyIndicator: "🔍 Multi-objective optimisation with trade-offs, experimentation, and iteration. The word 'optimise' often signals agent behaviour."
@@ -616,7 +624,7 @@
             keyIndicator: "🔍 Rule-based validation with deterministic output. No context or goals beyond the single evaluation."
         }, {
             spec: "Create a personal research assistant for investment decisions",
-            context: "Help users research potential investments by gathering data from multiple sources, Analysing trends, checking fundamentals, and providing a reasoned recommendation.",
+            context: "Help users research potential investments by gathering data from multiple sources, analysing trends, checking fundamentals, and providing a reasoned recommendation.",
             answer: "agent",
             reasoning: "This requires deciding what to research, which sources are credible, what metrics matter for this specific investment, reasoning about risk vs. reward, and synthesising findings into a recommendation. Each research path depends on what was learned previously.",
             appApproach: "Could pull predetermined metrics from APIs and display them, but that's just data retrieval, not the research and reasoning the spec describes.",
@@ -634,7 +642,7 @@
             spec: "Create a system that onboards new engineers",
             context: "Guide new hires through setup, documentation, first tasks, and check-ins. Adapt the pace based on their progress and background. Ensure they're ready to contribute.",
             answer: "agent",
-            reasoning: "This requires assessing the engineer's background, deciding what they need to learn first, monitoring their progress, adjusting the pace, determining when they're ready for more complex tasks, and knowing when onboarding is complete. It's goal-seeking behavior with constant adaptation.",
+            reasoning: "This requires assessing the engineer's background, deciding what they need to learn first, monitoring their progress, adjusting the pace, determining when they're ready for more complex tasks, and knowing when onboarding is complete. It's goal-seeking behaviour with constant adaptation.",
             appApproach: "Could provide a static checklist of onboarding steps, but that's not the adaptive guidance the spec describes.",
             agentApproach: "Assess background → create personalised plan → assign appropriate tasks → monitor progress → adjust difficulty → provide help when stuck → determine readiness → iterate until fully onboarded",
             keyIndicator: "🔍 Goal-driven ('get this person productive') with continuous assessment and adaptation based on individual progress."
@@ -650,10 +658,10 @@
             spec: "Create a content moderation system",
             context: "Review user-generated content for policy violations. Should catch obvious issues automatically, but escalate ambiguous cases for human review with relevant context.",
             answer: "tricky",
-            reasoning: "This depends on the level of judgment required. If it's checking against clear rules (banned words, explicit content detection) → App. If it's reasoning about context, understanding nuance, evaluating edge cases, and deciding what's truly policy-violating → Agent.",
+            reasoning: "This depends on the level of judgement required. If it's checking against clear rules (banned words, explicit content detection) → App. If it's reasoning about context, understanding nuance, evaluating edge cases, and deciding what's truly policy-violating → Agent.",
             appApproach: "Run content through classifiers → check banned word lists → detect explicit content → flag matches → escalate based on confidence thresholds",
             agentApproach: "Understand content context → reason about intent → evaluate nuance and edge cases → determine severity → decide if escalation needed → provide reasoning for human reviewers",
-            keyIndicator: "🔍 Pattern matching and classification = App. Contextual reasoning and judgment calls = Agent. The word 'ambiguous' suggests some agent-like reasoning is expected."
+            keyIndicator: "🔍 Pattern matching and classification = App. Contextual reasoning and judgement calls = Agent. The word 'ambiguous' suggests some agent-like reasoning is expected."
         }, {
             spec: "Build a dynamic pricing calculator",
             context: "Calculate product prices based on current demand, inventory levels, competitor prices, and customer segment. Adjust in real-time to optimise revenue.",
@@ -661,7 +669,7 @@
             reasoning: "This requires continuously monitoring multiple signals, reasoning about trade-offs (higher price vs. conversion rate), experimenting with different price points, learning what works, and adapting strategy. It's optimisation with multi-factor decision-making.",
             appApproach: "Could apply a fixed formula based on inputs, but 'optimise revenue' and real-time adaptation requires the strategic reasoning described.",
             agentApproach: "Monitor demand signals → evaluate competitor pricing → assess inventory → reason about customer sensitivity → test price points → measure outcomes → adapt strategy → optimise for revenue",
-            keyIndicator: "🔍 Continuous optimisation with experimentation and learning. The word 'optimise' combined with multiple variables signals agent behavior."
+            keyIndicator: "🔍 Continuous optimisation with experimentation and learning. The word 'optimise' combined with multiple variables signals agent behaviour."
         }, {
             spec: "Create a changelog generator from git commits",
             context: "Scan git history and generate a human-readable changelog with features, fixes, and breaking changes categorised appropriately.",
@@ -674,7 +682,7 @@
             spec: "Build a system that manages our technical debt",
             context: "Track technical debt across the codebase, prioritise what to address based on impact and effort, and create remediation plans. Monitor progress and adjust priorities.",
             answer: "agent",
-            reasoning: "This requires identifying debt, evaluating impact, reasoning about trade-offs (fix now vs. later), prioritising based on team capacity, creating actionable plans, monitoring whether fixes actually worked, and re-prioritising. It's ongoing judgment and adaptation.",
+            reasoning: "This requires identifying debt, evaluating impact, reasoning about trade-offs (fix now vs. later), prioritising based on team capacity, creating actionable plans, monitoring whether fixes actually worked, and re-prioritising. It's ongoing judgement and adaptation.",
             appApproach: "Could identify code issues with static analysis, but the prioritisation, planning, and adaptive management requires the reasoning described.",
             agentApproach: "Identify debt → evaluate business impact → assess effort required → reason about priorities → create remediation plan → monitor progress → adjust based on outcomes → iterate",
             keyIndicator: "🔍 Continuous prioritisation with trade-off evaluation and adaptive planning. Multiple feedback loops."
@@ -700,7 +708,7 @@
             context: "Employees submit receipts and other details for reimbursement. The tool should extract key data, check it against company policy for violations (e.g., spending limits), and flag any non-compliant items.",
             answer: "app",
             reasoning: "This is a data extraction and validation pipeline. It follows a fixed set of rules (the company policy) to check each expense. There is no long-term goal or complex decision-making; it's a series of deterministic checks: extract -> compare to rule -> pass/fail.",
-            appApproach: "Use OCR to read receipts → parse amounts and dates → compare against predefined policy rules (e.g., 'meal limit < $50') → validate against project codes → flag non-compliant entries for review.",
+            appApproach: "Use OCR to read receipts → parse amounts and dates → compare against predefined policy rules (e.g., 'meal limit < £40') → validate against project codes → flag non-compliant entries for review.",
             agentApproach: "Not needed unless the spec required it to *negotiate* with an employee about an out-of-policy expense or *decide* if an exception is warranted based on context (e.g., 'this was an important client dinner').",
             keyIndicator: "🔍 Rule-based validation. The logic ('is this expense valid?') is a series of deterministic checks, not strategic reasoning."
         },
@@ -708,10 +716,10 @@
             spec: "Create a system to actively manage a user's investment portfolio",
             context: "Based on a user's stated risk tolerance and financial goals (e.g., 'retire in 20 years'), the system should select investments, execute trades, rebalance the portfolio over time, and adjust its strategy based on market conditions and news.",
             answer: "agent",
-            reasoning: "This is a classic long-running, goal-seeking task. It requires continuous monitoring, reasoning about trade-offs (risk vs. reward), forming a plan (buy/sell/hold), and adapting that plan based on new, unpredictable information. The goal is to 'optimize' the portfolio, not just perform a single calculation.",
+            reasoning: "This is a classic long-running, goal-seeking task. It requires continuous monitoring, reasoning about trade-offs (risk vs. reward), forming a plan (buy/sell/hold), and adapting that plan based on new, unpredictable information. The goal is to 'optimise' the portfolio, not just perform a single calculation.",
             appApproach: "Could build a simple calculator that suggests a static asset allocation based on a quiz, but it would not 'actively manage' or 'adjust strategy' as the spec requires.",
             agentApproach: "Define user goal → create initial investment plan → continuously monitor market data & news → reason about potential impacts → decide whether to rebalance, buy, or sell → execute trades → report on progress → repeat.",
-            keyIndicator: "🔍 Continuous, goal-driven optimization with adaptive planning. The system decides *what to do* and *when to do it* to achieve a long-term objective."
+            keyIndicator: "🔍 Continuous, goal-driven optimisation with adaptive planning. The system decides *what to do* and *when to do it* to achieve a long-term objective."
         },
         {
             spec: "Build a system to detect and handle potentially fraudulent financial transactions",
@@ -719,7 +727,7 @@
             answer: "tricky",
             reasoning: "This hinges on the depth of 'investigate' and 'decide'. A simple system (App) would just use a machine learning model to flag transactions that match known fraud patterns. A more advanced system (Agent) would actively gather more context to make a better, reasoned decision, much like a human fraud analyst.",
             appApproach: "A classification model scores each transaction based on features (amount, location, time, merchant type). If the score exceeds a fixed threshold, the transaction is automatically blocked. This is pattern matching.",
-            agentApproach: "Detect an anomaly → form a hypothesis ('is this person unexpectedly traveling?') → decide what extra data to check (e.g., user's past travel history, recent login locations) → reason about the combined evidence → make a final decision to block or allow.",
+            agentApproach: "Detect an anomaly → form a hypothesis ('is this person unexpectedly travelling?') → decide what extra data to check (e.g., user's past travel history, recent login locations) → reason about the combined evidence → make a final decision to block or allow.",
             keyIndicator: "🔍 Pattern matching vs. investigative reasoning. Simply 'detecting' is often an app; 'investigating' to make a high-stakes decision is often an agent. The spec includes both."
         },
         {
@@ -727,7 +735,7 @@
             context: "When a new customer signs up, the tool must check their name and details against global sanctions lists (e.g., OFAC). The system should handle slight variations in names and flag potential matches for review.",
             answer: "app",
             reasoning: "This is a classic data matching and retrieval task. It takes an input (a name), compares it against a fixed dataset (the sanctions lists) using fuzzy logic, and outputs a result (match/no match/potential match). There is no planning, no goal-seeking, and no multi-step reasoning.",
-            appApproach: "Normalize the input name → use a fuzzy matching algorithm (like Levenshtein distance) to compare against a database of sanctioned individuals → return any matches that exceed a predefined similarity threshold.",
+            appApproach: "Normalise the input name → use a fuzzy matching algorithm (like Levenshtein distance) to compare against a database of sanctioned individuals → return any matches that exceed a predefined similarity threshold.",
             agentApproach: "Not needed unless the spec required the system to *independently investigate* an ambiguous match by searching for news articles or corporate records to determine if it's the same person, which is beyond simple screening.",
             keyIndicator: "🔍 Data matching and retrieval against a fixed dataset. If the primary action is 'check this against a list,' it's an app."
         },
@@ -735,9 +743,9 @@
             spec: "Build a system to investigate and triage Anti-Money Laundering (AML) alerts",
             context: "Our transaction monitoring system generates thousands of alerts for suspicious activity. This system needs to investigate each alert to determine if it represents a genuine risk that requires a full-blown Suspicious Activity Report (SAR).",
             answer: "agent",
-            reasoning: "An alert is just a starting point. 'Investigating' requires a multi-step, goal-oriented process: forming a hypothesis, deciding what evidence to gather next (e.g., transaction history, related accounts, customer's profile), synthesizing the findings, and making a reasoned judgment. This is not a single transformation; it's an iterative inquiry.",
+            reasoning: "An alert is just a starting point. 'Investigating' requires a multi-step, goal-oriented process: forming a hypothesis, deciding what evidence to gather next (e.g., transaction history, related accounts, customer's profile), synthesising the findings, and making a reasoned judgement. This is not a single transformation; it's an iterative inquiry.",
             appApproach: "Could build a simple dashboard that pulls pre-defined data points when an alert is clicked, but it wouldn't decide what to look for or make a recommendation. The human would still be the one investigating.",
-            agentApproach: "Receive alert → plan investigation steps → pull customer's full transaction history → analyze for patterns (e.g., structuring, pass-through activity) → check for links to other high-risk accounts → synthesize a narrative → recommend 'close case' or 'escalate for SAR filing'.",
+            agentApproach: "Receive alert → plan investigation steps → pull customer's full transaction history → analyse for patterns (e.g., structuring, pass-through activity) → check for links to other high-risk accounts → synthesise a narrative → recommend 'close case' or 'escalate for SAR filing'.",
             keyIndicator: "🔍 Investigative reasoning and evidence gathering. The system has to decide *what to look for next* to achieve its goal of triaging the alert."
         },
         {
@@ -746,8 +754,8 @@
             answer: "tricky",
             reasoning: "This is a classic 'it depends on the complexity' problem. For a simple consumer loan, this is an App that just runs a quantitative model. For a complex commercial loan, a system that acts more like a human underwriter, reasoning about qualitative factors, would be an Agent.",
             appApproach: "Take quantitative inputs (credit score, income, debt-to-income ratio) → feed them into a pre-trained statistical model or a fixed scorecard → output a risk score and a deterministic approve/deny decision based on a threshold.",
-            agentApproach: "For a business loan, the system would analyze the company's business plan, market trends, and management team experience. It might reason that 'although their current cash flow is tight, their new contract makes them a good risk' or identify missing information and decide to ask for more documents.",
-            keyIndicator: "🔍 Scorecard calculation vs. holistic judgment. 'Assessing risk' can be a simple, quantitative calculation (App) or a complex, context-aware evaluation that weighs qualitative evidence (Agent)."
+            agentApproach: "For a business loan, the system would analyse the company's business plan, market trends, and management team experience. It might reason that 'although their current cash flow is tight, their new contract makes them a good risk' or identify missing information and decide to ask for more documents.",
+            keyIndicator: "🔍 Scorecard calculation vs. holistic judgement. 'Assessing risk' can be a simple, quantitative calculation (App) or a complex, context-aware evaluation that weighs qualitative evidence (Agent)."
         },
         {
             spec: "Create a system that coordinates deployments across microservices",
@@ -771,8 +779,6 @@
         }
 
         function checkIfShouldShowLoadMore() {
-            // Only show load more if they started with Quick Practice (10 questions)
-            // and have completed all current questions
             if (initialChoice === 10 && answered === quizData.length && quizData.length < fullQuizData.length) {
                 document.getElementById('load-more-container').style.display = 'block';
             }
@@ -787,7 +793,6 @@
             const isTricky = item.answer === 'tricky';
             const trickyNote = isTricky ? '<div class="tricky-note">⚠️ This one could go either way depending on implementation!</div>' : '';
 
-            // Reverting to conditional buttons: Reveal for tricky, choices for others
             const buttonsHTML = isTricky ? `
                 <button class="reveal-btn" onclick="revealTrickyAnswer(${index})">
                     🔍 Reveal Answer
@@ -835,39 +840,31 @@
 
             return card;
         }
-
-        // Reinstated function for tricky questions
+        
         function revealTrickyAnswer(index) {
             const card = document.querySelector(`[data-index="${index}"]`);
             const answerSection = card.querySelector('.answer-section');
             const resultMessage = card.querySelector('.result-message');
             const revealBtn = card.querySelector('.reveal-btn');
 
-            // Prevent multiple reveals
             if (card.classList.contains('answered-tricky')) {
                 return;
             }
 
-            // Update stats (tricky questions always count as correct)
             answered++;
             score++;
             card.classList.add('answered-tricky');
 
-            // Disable reveal button
             revealBtn.disabled = true;
             revealBtn.style.opacity = '0.5';
             revealBtn.style.cursor = 'not-allowed';
 
-            // Show result message
             resultMessage.innerHTML = '<div class="result-badge tricky">✨ Both approaches can work!</div>';
 
-            // Show answer
             answerSection.classList.add('visible');
 
-            // Update stats
             updateStats();
 
-            // Scroll to show answer
             setTimeout(() => {
                 answerSection.scrollIntoView({
                     behavior: 'smooth',
@@ -876,7 +873,6 @@
             }, 100);
         }
 
-        // Adapted function for standard questions (only triggered if 'tricky' is not the answer)
         function selectAnswer(index, choice) {
             const card = document.querySelector(`[data-index="${index}"]`);
             const correctAnswer = card.dataset.answer;
@@ -884,14 +880,12 @@
             const answerSection = card.querySelector('.answer-section');
             const resultMessage = card.querySelector('.result-message');
 
-            // Prevent multiple answers
             if (card.classList.contains('answered-correct') || card.classList.contains('answered-wrong')) {
                 return;
             }
 
             const isCorrect = choice === correctAnswer;
 
-            // Update score
             answered++;
             if (isCorrect) {
                 score++;
@@ -900,7 +894,6 @@
                 card.classList.add('answered-wrong');
             }
 
-            // Update buttons
             buttons.forEach(btn => {
                 btn.disabled = true;
                 const btnType = btn.textContent.includes('App') ? 'app' : 'agent';
@@ -912,20 +905,16 @@
                 }
             });
 
-            // Show result message
             if (isCorrect) {
                 resultMessage.innerHTML = '<div class="result-badge correct">✓ Correct!</div>';
             } else {
                 resultMessage.innerHTML = `<div class="result-badge wrong">✗ Not quite — this is an ${correctAnswer}</div>`;
             }
 
-            // Show answer
             answerSection.classList.add('visible');
 
-            // Update stats
             updateStats();
 
-            // Scroll to show answer
             setTimeout(() => {
                 answerSection.scrollIntoView({
                     behavior: 'smooth',
@@ -943,7 +932,6 @@
             const progress = totalCount > 0 ? (answered / totalCount) * 100 : 0;
             document.getElementById('progress-fill').style.width = `${progress}%`;
 
-            // Check if all questions have been answered to potentially show celebration or load more
             if (answered > 0 && answered === totalCount) {
                 if (score === totalCount) {
                     triggerCelebration();
@@ -960,8 +948,8 @@
                 container.appendChild(createQuizCard(item, index));
             });
         }
+
         function triggerCelebration() {
-            // Create celebration message
             const message = document.createElement('div');
             message.className = 'celebration-message';
             message.innerHTML = `
@@ -970,13 +958,11 @@
             `;
             document.body.appendChild(message);
 
-            // Remove message after 3 seconds
             setTimeout(() => {
                 message.style.animation = 'celebration-pop 0.3s ease-in reverse';
                 setTimeout(() => message.remove(), 300);
             }, 3000);
 
-            // Create confetti
             const colors = ['#667eea', '#764ba2', '#48bb78', '#ed8936', '#f56565', '#9f7aea'];
             for (let i = 0; i < 100; i++) {
                 setTimeout(() => {
@@ -992,13 +978,13 @@
                 }, i * 30);
             }
         }
+
         function loadMoreQuestions() {
             const previousCount = quizData.length;
-            const newCount = Math.min(previousCount + 10, fullQuizData.length);
+            const newCount = fullQuizData.length;
             
             quizData = fullQuizData.slice(0, newCount);
             
-            // Render only the new questions
             const container = document.getElementById('quiz-container');
             for (let i = previousCount; i < newCount; i++) {
                 container.appendChild(createQuizCard(quizData[i], i));
@@ -1006,42 +992,48 @@
             
             updateStats();
             
-            // Hide button if all questions loaded
-            if (newCount >= fullQuizData.length) {
-                document.getElementById('load-more-container').style.display = 'none';
-            }
+            document.getElementById('load-more-container').style.display = 'none';
         }
 
-        function checkIfShouldShowLoadMore() {
-            // Count answered questions in current batch
-            const currentBatchAnswered = answered;
-            const currentBatchTotal = quizData.length;
-            
-            // Show continue quiz button if all current questions answered and more available
-            if (currentBatchAnswered === currentBatchTotal && quizData.length < fullQuizData.length) {
-                document.getElementById('load-more-container').style.display = 'block';
-            }
-        }
         function startQuiz(questionCount) {
-            // Hide mode selection
             document.getElementById('mode-selection').style.display = 'none';
-            
-            // Show header
             document.querySelector('header').style.display = 'block';
             
-            // Set up quiz with selected count
-            displayCount = questionCount;
-            initialChoice = questionCount; // Track what they originally chose
+            const displayCount = Math.min(questionCount, fullQuizData.length);
+            initialChoice = displayCount;
+            
             quizData = fullQuizData.slice(0, displayCount);
+            
+            document.getElementById('total-count').textContent = displayCount;
+            
             updateStats();
             renderQuiz();
         }
 
-        // Initialize - don't set up quiz until mode is selected
-        let displayCount = 10;
         let initialChoice = 10;
-        let fullQuizData = shuffleArray([...quizData]); // Shuffle a copy of the original data
-        quizData = []; // Clear until mode selected
+        let fullQuizData = [];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const totalAvailableQuestions = quizData.length;
+            
+            const fullChallengeBtn = document.getElementById('full-challenge-btn');
+            const fullChallengeDetails = document.getElementById('full-challenge-details');
+            
+            // Calculate dynamic time estimate (approx. 30 seconds per question)
+            const estimatedTime = Math.round(totalAvailableQuestions / 2);
+            
+            // Update the button text and onclick handler
+            if (fullChallengeDetails) {
+                fullChallengeDetails.textContent = `${totalAvailableQuestions} questions • ~${estimatedTime} minutes`;
+            }
+            if (fullChallengeBtn) {
+                fullChallengeBtn.setAttribute('onclick', `startQuiz(${totalAvailableQuestions})`);
+            }
+             
+            // Now shuffle the data for use in the quiz
+            fullQuizData = shuffleArray([...quizData]); 
+            quizData = []; // Clear until a mode is selected
+        });
     </script>
 </body>
 
